@@ -1,0 +1,140 @@
+﻿
+@{
+    ViewBag.Title = "index";
+}
+
+<h2> TEXT JUlia index</h2>
+
+
+<div class="container">
+    <a class="btn btn-info" href="create" role="button" id="createBtn">Create</a>
+</div>
+
+<div class="showAllComments">
+
+</div>
+
+<!-- TEMPLATE-->
+<div class="template hidden container" id="myTemplate">
+    <div class="comment col-sm-offset-1 col-sm-11 col-md-offset-1 col-md-11 block-margin clearfix">
+        <div class="block white block-shadow">
+            <div class="block-inner">
+                <div class="row">
+                    <div class="col-sm-3 col-md-2">
+                        <div class="picture">
+                            <img src="assets/img/testimonials-3.png" class="img-circle" alt="#">
+                        </div><!-- /.picture -->
+                    </div><!-- /.picture-wrapper -->
+
+                    <div class="col-sm-9 col-md-10">
+                        <div class="content-inner">
+                            <div class="block-title clearfix">
+                                <h3 class="cmtName">John Doe</h3>
+                                <a href="#" class="btn btn-small">Reply</a>
+                            </div><!-- /.block-title -->
+
+                            <div class="meta">
+                                <ul class="clearfix">
+                                    <li><i class="icon icon-normal-calendar-month"></i>12.12.2013</li>
+                                </ul>
+                            </div><!-- /.meta -->
+
+                            <div class="cmtText">
+                                <p>What is this?</p>
+                            </div><!-- /.text -->
+                            <div class="row">
+                                <a class="btn btn-danger pull-right    DeleteBtn" href="delete" role="button">Delete</a>
+                                <a class="btn btn-warning   pull-right   manageBtn" href="edit" role="button" id="editbtn">Edit</a>
+                            </div>
+                        </div><!-- /.content-inner -->
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.block-inner -->
+        </div><!-- /.block -->
+    </div><!-- /.comment -->
+</div>
+<!--END OF TEMPLATE-->
+
+
+
+
+    <script src="~/Scripts/services/sabio.services.messages.js"></script>
+
+    <script type="text/javascript">
+
+
+        sabio.page.startUp = function () {
+            sabio.page.loadJson();
+
+        }
+
+
+        sabio.page.loadJson = function () { //load jsson to render all the commetns on the page
+            //var url = "/api/messages/";
+            //$.ajax({
+            //    type: "GET",
+            //    url: url,
+            //    dataType: "json",
+            //    success: sabio.page.onAjaxSuccess
+
+            //});
+            sabio.services.messages.loadJson(sabio.page.onAjaxSuccess);
+        }
+        sabio.page.onAjaxSuccess = function (data) {
+            console.log("ajax success",data);
+            for (i = 0; i < data.items.length; i++) {
+              //  console.log("my[i].name is working",data.items[i].name);
+                var comment = data.items[i];
+                sabio.page.mainRender(comment, $(".showAllComments"));
+
+            }
+
+        }
+
+        sabio.page.mainRender = function (dataObject, targetElement) {
+            var clone = $(".template").clone();
+
+            clone.removeAttr("id");
+            clone.removeClass("hidden");
+            clone.removeClass("template");
+            $(".cmtName",clone).text(dataObject.name);
+            $(".cmtText", clone).text(dataObject.messageBody);
+            $(".manageBtn", clone).attr("href", "/messages/edit/" + dataObject.id);
+            //attr is replacing the old href(edit) to new href
+            $(".DeleteBtn", clone).on("click", sabio.page.handlers.deleteLoadJson);
+            $(".DeleteBtn", clone).attr("id", dataObject.id); // data.items[i].id
+            // this route need to be the same as apiController
+            targetElement.append(clone);
+           // console.log(dataObject.name);
+            return (clone);// DONT put anything after Return, it wont work!
+        }
+
+        sabio.page.handlers.deleteLoadJson = function (event) {
+            event.preventDefault();
+            console.log ("delete confirmed")
+            var answer = confirm("Are you sure you want to delete the message permanently?");//is the confirm built in JS?
+          //var answer=  alert("are you ok?")
+            if (answer) {
+                //$.ajax({
+                //    type: 'DELETE',
+                //    dataType: "json",
+                //    url: $(this).attr("href"), //"/api/messages/" + dataObject.id
+                //    success: sabio.page.MessageDeleted,
+                //    error: sabio.page.AjaxError
+                //});
+                sabio.services.messages.deleteLoadJson($(this).attr("id"), sabio.page.MessageDeleted, sabio.page.AjaxError);
+            }
+        }
+        sabio.page.MessageDeleted = function (deleteSuccessResponse) {
+            console.log("MessageDeleted success", deleteSuccessResponse);
+            window.location.reload(true);//Refresh
+            sabio.page.loadJson();
+        };
+        sabio.page.AjaxError = function (jqXHR, textStatus, errorThrown) {
+
+            console.error("error creating messages", jqXHR);
+        }
+
+    </script>
+
+

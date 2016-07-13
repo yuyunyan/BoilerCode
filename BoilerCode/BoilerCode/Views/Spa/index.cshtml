@@ -1,0 +1,198 @@
+﻿
+@{
+    ViewBag.Title = "index";
+}
+
+
+<body ng-app="BoilerApp">
+    <h2>Single Page Application </h2>
+
+    <div ng-view> THE  NG VIEW FOR SPA IS WORKING </div>
+    <h2 ng-controller="homeController as home">HOME CONTROLLER</h2>
+    <div class="container">
+      <div class="row">
+          <div class="col-md-4">
+              text
+          </div>
+          <div class="col-md-4">
+              text
+          </div>
+          <div class="col-md-4">
+              text
+          </div>
+      </div>
+    </div>
+
+</body>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/bower_components/angular/angular.min.js"></script>
+<script src="~/Scripts/bower_components/angular-route/angular-route.min.js"></script>
+<script src="~/Scripts/Core/Services/baseService.js"></script>
+<script src="~/Scripts/Core/Controllers/baseController.js"></script>
+<script type="text/javascript">
+    // (function () {
+    //     "use strict";
+
+    //     angular.module("BoilerApp", []);
+       
+    //angular.module("BoilerApp").controller("homeController", function () {
+
+    //    console.log("Hello Julia, Your Angular App is now in place Inject John papa !")
+
+    //})
+  
+  
+    
+    // })();
+
+    //(function() {
+    // "use strict";
+
+    // angular
+    // .module('BoilerApp')
+    //.factory('dataservice', dataservice);
+
+    
+    // dataservice.$inject = ['$http', 'logger'];
+
+
+    //function dataservice($http, logger) {
+    //    return {
+    //        getAvengers: getAvengers
+    //    };
+
+    //    function getAvengers() {
+    //        return $http.get('/api/maa')
+    //            .then(getAvengersComplete)
+    //            .catch(getAvengersFailed);
+
+    //        function getAvengersComplete(response) {
+    //            return response.data.results;
+    //        }
+
+    //        function getAvengersFailed(error) {
+    //            logger.error('XHR Failed for getAvengers.' + error.data);
+    //        }
+    //    }
+    //}
+
+
+
+
+    //})();
+
+   
+
+
+
+    //**Angular service factory**
+    (function () {//IIFE Boiler Plate
+        "use strict";
+       
+        //Service is implemented as a "factory".
+        angular.module("BoilerApp")
+        .factory('$registerService', registerServiceFactory);
+
+        //Identify dependencies for injection. $sabio is a reference to sabio.page object located in scripts
+        registerServiceFactory.$inject = ['$baseService', '$http'];
+
+        function registerServiceFactory($baseService, $sabio) {
+            //sabio.page has been injected as $sabio so we can reference anything attached to sabio.page here
+            var registerServiceObject = sabio.services.public;
+
+
+            //merge the JQuery object with the angular base service to simulate inheritance
+            var newService = $baseService.merge(true, {}, registerServiceObject, $baseService);
+
+            return newService;
+        }
+    })();
+
+    //**Angular Controller Factory**
+
+    (function () {
+        "use strict";
+        angular.module("BoilerApp", []);
+        angular.module("BoilerApp", "ngRoute")
+        .controller('registerController'/*name*/, RegisterController/*definition*/)
+
+        RegisterController.$inject = ['$scope', '$baseController', '$registerService', '$fbService'];
+
+
+        function RegisterController(
+            $scope,
+            $baseController,
+            $registerService,
+            $fbService) {
+
+            //controllerAs with vm syntax - john papa style
+            var vm = this; //this points to a new {}
+
+            vm.registerMe = {};
+            vm.showLoginFB = false;
+
+            vm.$registerService = $registerService;
+            vm.$fbService = $fbService;
+            vm.$scope = $scope;
+
+            // **HOIST HERE**bindable members (functions) always go up top while the "meat" of functions go below
+            vm.regUser = _regUser;
+            //vm.fblogin = _fblogin;
+            //vm.statusChangeCallback = _statusChangeCallback;
+            //vm.fbUserInfoLoaded = _fbUserInfoLoaded;
+
+            // simulate inheritance
+            $baseController.merge(vm, $baseController);
+
+            // wrapper for small dependency on $scope
+            vm.notify = vm.$registerService.getNotifier($scope);
+
+            //render();
+
+            //function render() {
+            //    console.log("fb connecting");
+            //    vm.$fbService.init();
+            //};
+
+            function _regUser() {
+                vm.showNewRegErrors = true;
+                console.log("registerme payload ", vm.registerMe);
+                if (vm.registerForm.$valid) {
+                    vm.$registerService.register(vm.registerMe, _regSuccess, _regError);
+                }
+
+                else {
+                    console.log("form submitted with invalid data")
+                }
+            };
+
+            function _regSuccess(data) {
+                //vm.$alertService.success();
+                console.log("register return", data);
+                if (data.item == "externalAuthUser") {
+                    vm.notify(function () {
+                        vm.showLoginFB = true;
+                    });
+                } else if (data.item.id) {
+                    window.location.href = '/user/profile/' + data.item.id;
+                }
+            };
+
+            function _regError() {
+                vm.$alertService.error();
+            };
+
+
+
+        }
+
+    })();
+
+
+
+
+
+  
+
+</script>
